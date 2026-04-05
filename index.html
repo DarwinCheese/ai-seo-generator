@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rankforge — AI SEO Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700;900&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0d0d0d;
+      --paper: #f7f3ed;
+      --gold: #c8963e;
+      --gold-light: #e8b862;
+      --rule: #2a2a2a;
+      --muted: #7a7060;
+      --accent-bg: #1a1610;
+      --output-bg: #faf7f2;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--ink);
+      color: var(--paper);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.6;
+    }
+
+    /* ── MASTHEAD ─────────────────────────────────── */
+    .masthead {
+      border-bottom: 1px solid #2e2a24;
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .masthead-logo {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+      color: var(--paper);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .masthead-logo .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: inline-block;
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    .masthead-tag {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ── HERO RULE ────────────────────────────────── */
+    .hero-rule {
+      padding: 56px 48px 0;
+      animation: fadeDown 0.7s 0.1s ease both;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 700;
+      line-height: 1.04;
+      letter-spacing: -2px;
+      color: var(--paper);
+      max-width: 680px;
+    }
+
+    .hero-headline em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    .hero-sub {
+      margin-top: 20px;
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 440px;
+      line-height: 1.65;
+    }
+
+    /* ── DIVIDER ──────────────────────────────────── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 40px 48px 0;
+      animation: fadeDown 0.7s 0.2s ease both;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, #2e2a24, transparent);
+    }
+
+    .divider-text {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ── FORM LAYOUT ──────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      padding: 0 48px;
+      margin-top: 40px;
+      animation: fadeUp 0.8s 0.25s ease both;
+    }
+
+    .form-col-left {
+      padding-right: 48px;
+      border-right: 1px solid #2e2a24;
+    }
+
+    .form-col-right {
+      padding-left: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .field-group {
+      margin-bottom: 32px;
+    }
+
+    .field-label {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #2e2a24;
+      padding: 10px 0 12px;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      color: var(--paper);
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .field-input::placeholder {
+      color: #3a3530;
+      font-style: italic;
+      font-size: 16px;
+    }
+
+    .field-input:focus {
+      border-bottom-color: var(--gold);
+    }
+
+    .field-optional {
+      color: #3a3530;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .field-textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #2e2a24;
+      padding: 10px 0 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--paper);
+      outline: none;
+      resize: none;
+      line-height: 1.6;
+      transition: border-color 0.3s ease;
+    }
+
+    .field-textarea::placeholder {
+      color: #3a3530;
+      font-style: italic;
+    }
+
+    .field-textarea:focus {
+      border-bottom-color: var(--gold);
+    }
+
+    .field-select {
+      width: 100%;
+      background: var(--accent-bg);
+      border: 1px solid #2e2a24;
+      border-radius: 0;
+      padding: 14px 16px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 13px;
+      color: var(--paper);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c8963e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      transition: border-color 0.3s;
+      letter-spacing: 1px;
+    }
+
+    .field-select:focus { border-color: var(--gold); }
+    .field-select option { background: #1a1610; }
+
+    /* Content type cards */
+    .type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .type-card {
+      border: 1px solid #2e2a24;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: transparent;
+      text-align: left;
+    }
+
+    .type-card:hover {
+      border-color: var(--gold);
+      background: rgba(200, 150, 62, 0.04);
+    }
+
+    .type-card.selected {
+      border-color: var(--gold);
+      background: rgba(200, 150, 62, 0.08);
+    }
+
+    .type-card-name {
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--paper);
+    }
+
+    .type-card.selected .type-card-name { color: var(--gold-light); }
+
+    .type-card-desc {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── GENERATE BUTTON ──────────────────────────── */
+    .btn-generate {
+      position: relative;
+      width: 100%;
+      padding: 18px 32px;
+      background: var(--gold);
+      color: var(--ink);
+      border: none;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: background 0.25s ease, transform 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-generate:active:not(:disabled) { transform: translateY(0); }
+
+    .btn-generate:disabled {
+      background: #3a3530;
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .btn-arrow {
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
+    .btn-generate:hover:not(:disabled) .btn-arrow { transform: translateX(4px); }
+
+    /* Loading spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(13,13,13,0.3);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn-generate.loading .spinner { display: block; }
+    .btn-generate.loading .btn-label { opacity: 0.7; }
+    .btn-generate.loading .btn-arrow { display: none; }
+
+    /* ── OUTPUT SECTION ───────────────────────────── */
+    #output {
+      margin: 56px 48px 80px;
+      border: 1px solid #2e2a24;
+      animation: revealOutput 0.5s ease both;
+    }
+
+    .output-header {
+      background: var(--accent-bg);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #2e2a24;
+    }
+
+    .output-title {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .output-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    .output-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .output-timestamp {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .copy-btn {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid #2e2a24;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .copy-btn.copied {
+      border-color: #5a8a5a;
+      color: #7aaa7a;
+    }
+
+    #result {
+      background: var(--output-bg);
+      padding: 36px 40px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 14px;
+      line-height: 1.85;
+      color: #2a2015;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .output-footer {
+      background: var(--accent-bg);
+      padding: 12px 24px;
+      border-top: 1px solid #2e2a24;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .word-count {
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── BOTTOM RULE ──────────────────────────────── */
+    .bottom-rule {
+      border-top: 1px solid #2e2a24;
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bottom-rule-left {
+      font-family: 'Courier Prime', monospace;
+      font-size: 10px;
+      color: #3a3530;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* ── ANIMATIONS ───────────────────────────────── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes revealOutput {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .topic-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .topic-grid .type-card {
+      padding: 10px 12px;
+    }
+
+    .topic-grid .type-card-name {
+      font-size: 11px;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────── */
+    @media (max-width: 768px) {
+      .masthead, .hero-rule, .divider, .bottom-rule { padding-left: 24px; padding-right: 24px; }
+      .form-grid { grid-template-columns: 1fr; padding: 0 24px; }
+      .form-col-left { padding-right: 0; border-right: none; border-bottom: 1px solid #2e2a24; padding-bottom: 32px; margin-bottom: 32px; }
+      .form-col-right { padding-left: 0; }
+      #output { margin: 40px 24px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Masthead -->
+  <header class="masthead">
+    <div class="masthead-logo">
+      <span class="dot"></span>
+      Rankforge
+    </div>
+    <span class="masthead-tag">AI Contentmotor</span>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero-rule">
+    <p class="hero-eyebrow">/ SEO Artikel Generator</p>
+    <h1 class="hero-headline">Minder schrijven.<br><em>Hoger ranken.</em></h1>
+    <p class="hero-sub">Genereer publicatieklare, zoekgeoptimaliseerde artikelen in seconden. Getraind op wat daadwerkelijk converteert.</p>
+  </section>
+
+  <!-- Divider -->
+  <div class="divider">
+    <div class="divider-line"></div>
+    <span class="divider-text">Stel je artikel in</span>
+    <div class="divider-line" style="background: linear-gradient(to left, #2e2a24, transparent);"></div>
+  </div>
+
+  <!-- Form -->
+  <div class="form-grid">
+    <div class="form-col-left">
+      <div class="field-group">
+        <label class="field-label" for="keyword">Doelzoekwoord</label>
+        <input class="field-input" type="text" id="keyword" placeholder="bijv. ricinusolie voor haargroei" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="productDetails">Productdetails <span class="field-optional">(optioneel)</span></label>
+        <textarea class="field-textarea" id="productDetails" placeholder="bijv. naam, ingrediënten, claims, prijs, doelgroep…" rows="3"></textarea>
+      </div>
+      <div class="field-group" style="margin-bottom: 0;">
+        <label class="field-label">Topic angle</label>
+        <input type="hidden" id="topic" value="Probleem - oplossing">
+        <div class="type-grid topic-grid">
+          <button class="type-card selected" data-topic="Probleem - oplossing" onclick="selectTopic(this)">
+            <span class="type-card-name">Probleem - oplossing</span>
+          </button>
+          <button class="type-card" data-topic="Ingredient Spotlight" onclick="selectTopic(this)">
+            <span class="type-card-name">Ingredient Spotlight</span>
+          </button>
+          <button class="type-card" data-topic="Routine opbouw" onclick="selectTopic(this)">
+            <span class="type-card-name">Routine opbouw</span>
+          </button>
+          <button class="type-card" data-topic="Vergelijking" onclick="selectTopic(this)">
+            <span class="type-card-name">Vergelijking</span>
+          </button>
+          <button class="type-card" data-topic="Mythes ontkrachten" onclick="selectTopic(this)">
+            <span class="type-card-name">Mythes ontkrachten</span>
+          </button>
+          <button class="type-card" data-topic="Seizoensgebonden" onclick="selectTopic(this)">
+            <span class="type-card-name">Seizoensgebonden</span>
+          </button>
+          <button class="type-card" data-topic="Beginnersgids" onclick="selectTopic(this)">
+            <span class="type-card-name">Beginnersgids</span>
+          </button>
+          <button class="type-card" data-topic="Productcategorie gids" onclick="selectTopic(this)">
+            <span class="type-card-name">Productcategorie gids</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-col-right">
+      <div class="field-group">
+        <label class="field-label">Contenttype</label>
+        <!-- Hidden select for JS compatibility -->
+        <select id="contentType" style="display:none;">
+          <option value="Guide">Guide</option>
+          <option value="Listicle">Listicle</option>
+          <option value="Educational">Educational</option>
+          <option value="Comparison">Comparison</option>
+        </select>
+        <div class="type-grid">
+          <button class="type-card selected" data-type="Guide" onclick="selectType(this)">
+            <span class="type-card-name">Gids</span>
+            <span class="type-card-desc">Stap-voor-stap uitleg</span>
+          </button>
+          <button class="type-card" data-type="Listicle" onclick="selectType(this)">
+            <span class="type-card-name">Lijstartikel</span>
+            <span class="type-card-desc">Scanbaar lijstformaat</span>
+          </button>
+          <button class="type-card" data-type="Educational" onclick="selectType(this)">
+            <span class="type-card-name">Educatief</span>
+            <span class="type-card-desc">Uitleggen &amp; informeren</span>
+          </button>
+          <button class="type-card" data-type="Comparison" onclick="selectType(this)">
+            <span class="type-card-name">Vergelijking</span>
+            <span class="type-card-desc">Zij-aan-zij analyse</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="btn" onclick="generate()">
+        <div class="spinner"></div>
+        <span class="btn-label">Artikel genereren</span>
+        <span class="btn-arrow">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Output -->
+  <div id="output" style="display:none;">
+    <div class="output-header">
+      <div class="output-title">
+        <span class="output-dot"></span>
+        Gegenereerd artikel
+      </div>
+      <div class="output-meta">
+        <span class="output-timestamp" id="status"></span>
+        <button class="copy-btn" id="copyBtn" onclick="copyResult()">Kopiëren</button>
+      </div>
+    </div>
+    <div id="result"></div>
+    <div class="output-footer">
+      <span class="word-count" id="wordCount"></span>
+    </div>
+  </div>
+
+  <div class="bottom-rule">
+    <span class="bottom-rule-left">Rankforge &copy; 2025</span>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = 'https://n8n.srv1535293.hstgr.cloud/webhook/seo-generator';
+
+    function selectType(el) {
+      document.querySelectorAll('.type-card[data-type]').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('contentType').value = el.dataset.type;
+    }
+
+    function selectTopic(el) {
+      document.querySelectorAll('.type-card[data-topic]').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('topic').value = el.dataset.topic;
+    }
+
+    async function generate() {
+      const keyword = document.getElementById('keyword').value.trim();
+      const topic = document.getElementById('topic').value.trim();
+      const contentType = document.getElementById('contentType').value;
+      const productDetails = document.getElementById('productDetails').value.trim();
+      const btn = document.getElementById('btn');
+      const output = document.getElementById('output');
+      const result = document.getElementById('result');
+      const status = document.getElementById('status');
+
+      if (!keyword) {
+        shakeInputs();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+      btn.querySelector('.btn-label').textContent = 'Bezig met genereren…';
+      output.style.display = 'none';
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          credentials: 'omit',
+          body: JSON.stringify({
+            keyword,
+            'topic / angle': topic,
+            'content type': contentType,
+            ...(productDetails && { 'product_details': productDetails })
+          })
+        });
+
+        const data = await response.json();
+        const text = data.generated_post || '';
+        result.textContent = text;
+
+        const words = text.trim().split(/\s+/).filter(Boolean).length;
+        document.getElementById('wordCount').textContent = `${words} woorden · ~${Math.ceil(words / 200)} min leestijd`;
+
+        const now = new Date();
+        status.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        document.getElementById('copyBtn').textContent = 'Kopiëren';
+        document.getElementById('copyBtn').classList.remove('copied');
+        output.style.display = 'block';
+        output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        alert('Er ging iets mis: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        btn.querySelector('.btn-label').textContent = 'Artikel genereren';
+      }
+    }
+
+    function copyResult() {
+      const text = document.getElementById('result').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Gekopieerd ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Kopiëren';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    function shakeInputs() {
+      const el = document.getElementById('keyword');
+      if (!el.value.trim()) {
+        el.style.borderBottomColor = '#c84a3e';
+        el.style.transition = 'border-color 0.3s';
+        setTimeout(() => { el.style.borderBottomColor = ''; }, 1800);
+      }
+    }
+  </script>
+</body>
+</html>
